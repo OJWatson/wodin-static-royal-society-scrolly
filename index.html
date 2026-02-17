@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Royal Society model, static Wodin scrollytelling demo</title>
+
+  <link rel="stylesheet" href="./wodin.css" />
+
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .scrolly {
+      height: 100vh;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+    }
+
+    section.snap {
+      scroll-snap-align: start;
+      min-height: 100vh;
+      padding: 3rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .viz-box {
+      min-height: 60vh;
+    }
+
+    .sticky-panel {
+      position: sticky;
+      top: 1rem;
+    }
+
+    .section-nav {
+      position: fixed;
+      right: 1rem;
+      top: 1rem;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 0.5rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .section-nav a {
+      display: block;
+      text-decoration: none;
+      margin: 0.25rem 0;
+    }
+
+    /* Keep embedded charts from creating horizontal scroll */
+    .container {
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="section-nav">
+    <div class="fw-bold mb-2">Sections</div>
+    <a href="#intro">Intro</a>
+    <a href="#r0">R₀</a>
+    <a href="#severity">Severity</a>
+    <a href="#npi">NPIs</a>
+    <a href="#sensitivity">Sensitivity</a>
+    <a href="#top">Top</a>
+  </nav>
+
+  <div id="top"></div>
+
+  <div class="scrolly">
+    <section id="intro" class="snap">
+      <div class="container">
+        <h1 class="mb-3">Exploring disease spread with the NPI simulator</h1>
+
+        <p>
+          This is a prototype scrollytelling page built with the new static Wodin build.
+          Each section embeds a Wodin plot plus a small set of sliders.
+          The model is based on the Royal Society “viral respiratory pathogen” example.
+        </p>
+
+        <div class="row mt-4">
+          <div class="col-lg-4">
+            <div class="sticky-panel">
+              <h3 class="h5">Seeding infections</h3>
+              <p class="mb-3">
+                In this model, seeding is represented as a constant stream of importations.
+                Adjust the importation rate and watch how the epidemic curve changes.
+              </p>
+
+              <div class="w-par"
+                   data-w-store="viral_respiratory:1"
+                   w-par="A0_importations_per_day"
+                   w-title="Importations per day"
+                   w-desc="Average number of infections introduced from outside the modelled population per day."
+                   w-min="0"
+                   w-max="50"
+                   w-step="1"></div>
+
+              <p class="mt-3 mb-0">
+                Tip: this section is independent from the others. Each section uses a separate model instance.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="viz-box w-run-graph"
+                 data-w-store="viral_respiratory:1"
+                 w-hide-run-button
+                 w-hide-download-button
+                 w-visible-vars="daily_infections, daily_hospital_admissions"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="r0" class="snap">
+      <div class="container">
+        <h2 class="mb-3">Transmission potential (R₀)</h2>
+
+        <p>
+          R₀ is the average number of secondary infections caused by one infected person in a fully susceptible population.
+          Here, R₀ is translated into a transmission rate using the model’s infectious period assumptions.
+        </p>
+
+        <div class="row mt-4">
+          <div class="col-lg-4">
+            <div class="sticky-panel">
+              <div class="w-par"
+                   data-w-store="viral_respiratory:2"
+                   w-par="A1_R0"
+                   w-title="R₀"
+                   w-desc="Basic reproduction number."
+                   w-min="0"
+                   w-max="6"
+                   w-step="0.1"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:2"
+                   w-par="A5_symptomatic_days"
+                   w-title="Symptomatic days"
+                   w-desc="Duration of symptoms (used to derive infectious durations in the model)."
+                   w-min="1"
+                   w-max="21"
+                   w-step="1"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="viz-box w-run-graph"
+                 data-w-store="viral_respiratory:2"
+                 w-hide-run-button
+                 w-hide-download-button
+                 w-visible-vars="daily_infections, daily_hospital_admissions, daily_deaths"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="severity" class="snap">
+      <div class="container">
+        <h2 class="mb-3">Clinical severity assumptions</h2>
+
+        <p>
+          This model parameterises severity using age-specific infection fatality risks (IFRs),
+          and uses a fixed hospital fatality risk internally to derive hospitalisation risks.
+          Small changes in severity assumptions can change projected deaths substantially.
+        </p>
+
+        <div class="row mt-4">
+          <div class="col-lg-4">
+            <div class="sticky-panel">
+              <div class="w-par"
+                   data-w-store="viral_respiratory:3"
+                   w-par="A6_IFR_age_under_18"
+                   w-title="IFR under 18"
+                   w-desc="Infection fatality risk for the under-18 age group."
+                   w-min="0"
+                   w-max="0.02"
+                   w-step="0.0001"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:3"
+                   w-par="A7_IFR_age_18_65"
+                   w-title="IFR 18–65"
+                   w-desc="Infection fatality risk for the 18–65 age group."
+                   w-min="0"
+                   w-max="0.02"
+                   w-step="0.0001"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:3"
+                   w-par="A8_IFR_age_over_65"
+                   w-title="IFR over 65"
+                   w-desc="Infection fatality risk for the over-65 age group."
+                   w-min="0"
+                   w-max="0.2"
+                   w-step="0.001"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="viz-box w-run-graph"
+                 data-w-store="viral_respiratory:3"
+                 w-hide-run-button
+                 w-hide-download-button
+                 w-visible-vars="daily_hospital_admissions, daily_deaths, total_deaths"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="npi" class="snap">
+      <div class="container">
+        <h2 class="mb-3">Non-pharmaceutical interventions (NPIs)</h2>
+
+        <p>
+          The model includes a simple intervention mechanism: after a delay (relative to the first hospitalisation),
+          parameters that represent contact patterns and transmission can be reduced.
+          This is not a policy optimiser, but it gives a way to explore how timing and strength might matter.
+        </p>
+
+        <div class="row mt-4">
+          <div class="col-lg-4">
+            <div class="sticky-panel">
+              <div class="w-par"
+                   data-w-store="viral_respiratory:4"
+                   w-par="B0_npi_delay_after_first_hospitalisation"
+                   w-title="NPI delay (days)"
+                   w-desc="Delay after first hospitalisation before NPIs are applied."
+                   w-min="0"
+                   w-max="60"
+                   w-step="1"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:4"
+                   w-par="B1_reduction_in_transmission_among_contacts"
+                   w-title="Transmission reduction"
+                   w-desc="Overall reduction in transmission among contacts after NPIs."
+                   w-min="0"
+                   w-max="1"
+                   w-step="0.05"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:4"
+                   w-par="B2b_reduction_in_contacts_18_65"
+                   w-title="Contact reduction (18–65)"
+                   w-desc="Reduction in contacts for the 18–65 age group after NPIs."
+                   w-min="0"
+                   w-max="1"
+                   w-step="0.05"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:4"
+                   w-par="B3a_proportion_isolating_after_symptoms"
+                   w-title="Isolation after symptoms"
+                   w-desc="Proportion isolating after symptoms (reduces infectiousness after NPIs)."
+                   w-min="0"
+                   w-max="1"
+                   w-step="0.05"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="viz-box w-run-graph"
+                 data-w-store="viral_respiratory:4"
+                 w-hide-run-button
+                 w-hide-download-button
+                 w-visible-vars="daily_infections, daily_hospital_admissions, daily_deaths"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sensitivity" class="snap">
+      <div class="container">
+        <h2 class="mb-3">Sensitivity analysis (prototype)</h2>
+
+        <p>
+          Static Wodin can also mount the sensitivity visualisation. This section keeps the UI minimal,
+          but still lets you explore how uncertainty in parameters affects selected outputs.
+        </p>
+
+        <div class="row mt-4">
+          <div class="col-lg-4">
+            <div class="sticky-panel">
+              <p class="mb-3">
+                This uses the same model type as the other sections, but a separate instance.
+              </p>
+
+              <div class="w-par"
+                   data-w-store="viral_respiratory:5"
+                   w-par="A1_R0"
+                   w-title="R₀"
+                   w-desc="Basic reproduction number."
+                   w-min="0"
+                   w-max="6"
+                   w-step="0.1"></div>
+
+              <div class="w-par mt-3"
+                   data-w-store="viral_respiratory:5"
+                   w-par="B1_reduction_in_transmission_among_contacts"
+                   w-title="Transmission reduction"
+                   w-desc="Overall reduction in transmission among contacts after NPIs."
+                   w-min="0"
+                   w-max="1"
+                   w-step="0.05"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="viz-box w-sens-graph"
+                 data-w-store="viral_respiratory:5"
+                 w-hide-sensitivity-button
+                 w-hide-download-button
+                 w-visible-vars="daily_deaths"></div>
+          </div>
+        </div>
+
+        <p class="mt-4">
+          <a href="#top">Back to top</a>
+        </p>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="./wodin.js"></script>
+</body>
+</html>
